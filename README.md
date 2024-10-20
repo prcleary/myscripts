@@ -1,2 +1,3 @@
-# myscripts
+# `myscripts`
+
 Miscellaneous scripts
