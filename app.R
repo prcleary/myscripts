@@ -4,19 +4,18 @@ library(clipr)
 
 # Function definitions
 randomtasks2 <- rat2 <- function() {
-  tasks <- read_clip()
-  tasks <- gsub("^☐", "- [ ]", tasks)
-  tasks <- gsub("^   ☐", "  - [ ]", tasks)
+  tasks <- read_clip(allow_non_interactive = TRUE)
+  tasks <- gsub("^\\s*☐", "- [ ]", tasks)
   probs <- 1 / seq_along(tasks)
   probs <- probs / sum(probs)
   chosen <- sample(tasks, prob = probs)
   paste(chosen, collapse = "\n")
 }
 
-daynote <- dn <- function(minutes_available = 8 * 60,
+daynote <- dn <- function(minutes_available = 10 * 60,
                           focus_areas = NULL,
                           tasks = NULL,
-                          work_start = '09:00',
+                          work_start = '08:00',
                           time_format = '%H:%M',
                           work_length = 25,
                           rest_length = 5,
@@ -51,7 +50,22 @@ daynote <- dn <- function(minutes_available = 8 * 60,
     '',
     '- ',
     '',
+    '## Training',
+    '',
+    '- [ ] 5 reps',
+    '- [ ] 5 reps',
+    '- [ ] 5 reps',
+    '- [ ] 5 reps',
+    '- [ ] 5 reps',
+    '- [ ] 5 reps',
+    '- [ ] 5 reps',
+    '- [ ] 5 reps',
+    '',
     '## Work',
+    '',
+    '- ',
+    '',
+    '## Home',
     '',
     '- ',
     '',
@@ -76,24 +90,13 @@ ui <- page_navbar(
   theme = bs_theme(version = 5, bootswatch = "darkly"),
   title = "Task and Day Note Generator",
 
-  nav_panel("Random Tasks", layout_sidebar(
-    sidebar = sidebar(actionButton(
-      "generateRandomTasks", "Generate Random Tasks"
-    )), card(
-      card_header("Random Tasks Output"),
-      card_body(
-        uiOutput("randomTasksOutput"),
-        actionButton("copyRandomTasks", "Copy to Clipboard")
-      )
-    )
-  )),
 
   nav_panel("Day Note", layout_sidebar(
     sidebar = sidebar(
       numericInput(
         "minutesAvailable",
         "Minutes Available",
-        value = 480,
+        value = 10 * 60,
         min = 1
       ),
       textInput("focusAreas", "Focus Areas (comma-separated)", value = ""),
@@ -103,7 +106,7 @@ ui <- page_navbar(
         value = "",
         height = "100px"
       ),
-      textInput("workStart", "Work Start Time", value = "09:00"),
+      textInput("workStart", "Work Start Time", value = "08:00"),
       numericInput(
         "workLength",
         "Work Length (minutes)",
@@ -131,7 +134,19 @@ ui <- page_navbar(
         actionButton("copyDayNote", "Copy to Clipboard")
       )
     )
-  ))
+  )),
+
+  nav_panel("Random Tasks", layout_sidebar(
+    sidebar = sidebar(actionButton(
+      "generateRandomTasks", "Generate Random Tasks"
+    )), card(
+      card_header("Random Tasks Output"),
+      card_body(
+        uiOutput("randomTasksOutput"),
+        actionButton("copyRandomTasks", "Copy to Clipboard")
+      )
+    )
+  )),
 )
 
 server <- function(input, output, session) {
@@ -172,12 +187,12 @@ server <- function(input, output, session) {
   })
 
   observeEvent(input$copyRandomTasks, {
-    write_clip(randomTasksResult())
+    write_clip(randomTasksResult(), allow_non_interactive = TRUE)
     showNotification("Random Tasks copied to clipboard!", type = "message")
   })
 
   observeEvent(input$copyDayNote, {
-    write_clip(dayNoteResult())
+    write_clip(dayNoteResult(), allow_non_interactive = TRUE)
     showNotification("Day Note copied to clipboard!", type = "message")
   })
 }
